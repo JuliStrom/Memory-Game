@@ -4,6 +4,40 @@ const createElement = (tagName, className) => {
     return element;
 };
 
+const createModal = (overlayClass, modalClass, titleClass, titleText, titleId) => {
+    const overlay = createElement("div", `modal-overlay ${overlayClass}`);
+    const dialog = createElement("section", `modal-dialog ${modalClass}`);
+    const title = createElement("h1", titleClass);
+
+    title.textContent = titleText;
+    title.id = titleId;
+    overlay.hidden = true;
+    overlay.setAttribute("aria-hidden", "true");
+    dialog.setAttribute("role", "dialog");
+    dialog.setAttribute("aria-modal", "true");
+    dialog.setAttribute("aria-labelledby", titleId);
+    dialog.append(title);
+    overlay.append(dialog);
+
+    return { overlay, dialog };
+};
+
+const openModal = (overlay, focusTarget) => {
+    overlay.hidden = false;
+    overlay.setAttribute("aria-hidden", "false");
+    focusTarget.focus();
+};
+
+const closeModal = (overlay, focusTarget) => {
+    const wasOpen = !overlay.hidden;
+    overlay.hidden = true;
+    overlay.setAttribute("aria-hidden", "true");
+
+    if (wasOpen && focusTarget) {
+        focusTarget.focus();
+    }
+};
+
 const animals = [
     { name: "Кот в шапке лягушки", image: "assets/me6.jpeg" },
     { name: "Лис", image: "assets/fox.jpg" },
@@ -11,12 +45,13 @@ const animals = [
     { name: "Единорог", image: "assets/me4.jpeg" },
     { name: "Утёнок", image: "assets/me3.jpeg" },
     { name: "Баран", image: "assets/baran.jpg" },
-    { name: "Белый кот", image: "assets/cat.png" },
+    { name: "Глупый кот", image: "assets/cat.png" },
     { name: "Корова", image: "assets/me2.png" },
 ];
 
 const app = createElement("main", "game");
 const header = createElement("header", "game-header");
+const gameTitle = createElement("h1", "game-title");
 const stats = createElement("div", "game-stats");
 const movesCounter = createElement("span", "game-stat");
 const pairsCounter = createElement("span", "game-stat");
@@ -24,20 +59,23 @@ const headerActions = createElement("div", "header-actions");
 const newGameButton = createElement("button", "header-button");
 const leaderboardButton = createElement("button", "header-button");
 const board = createElement("section", "board");
-const victoryOverlay = createElement("div", "victory-overlay");
-const victoryModal = createElement("section", "victory-modal");
-const victoryTitle = createElement("h1", "victory-title");
+
+const victory = createModal("victory-overlay", "victory-modal", "victory-title", "Победа!", "victory-title");
+const victoryOverlay = victory.overlay;
+const victoryModal = victory.dialog;
 const victoryMessage = createElement("p", "victory-message");
 const victoryMoves = createElement("p", "victory-moves");
 const victoryActions = createElement("div", "victory-actions");
 const victoryNewGameButton = createElement("button", "header-button");
 const victoryCloseButton = createElement("button", "header-button");
-const leaderboardOverlay = createElement("div", "leaderboard-overlay");
-const leaderboardModal = createElement("section", "leaderboard-modal");
-const leaderboardTitle = createElement("h1", "leaderboard-title");
+
+const leaderboard = createModal("leaderboard-overlay", "leaderboard-modal", "leaderboard-title", "Таблица лидеров", "leaderboard-title");
+const leaderboardOverlay = leaderboard.overlay;
+const leaderboardModal = leaderboard.dialog;
 const leaderboardContent = createElement("div", "leaderboard-content");
 const leaderboardCloseButton = createElement("button", "header-button");
 const storageErrorMessage = createElement("p", "storage-error");
+
 let firstCard = null;
 let isLocked = false;
 let mismatchTimeout = null;
@@ -48,34 +86,22 @@ const leaderboardStorageKey = "memory-game-leaderboard";
 
 movesCounter.setAttribute("aria-live", "polite");
 pairsCounter.setAttribute("aria-live", "polite");
+gameTitle.textContent = "Мемо";
 newGameButton.type = "button";
 newGameButton.textContent = "Новая игра";
 leaderboardButton.type = "button";
 leaderboardButton.textContent = "Таблица лидеров";
 leaderboardButton.setAttribute("aria-label", "Таблица лидеров");
-victoryTitle.textContent = "Победа!";
+
 victoryMessage.textContent = "Ты нашёл все 8 пар!";
-victoryMoves.classList.add("victory-moves");
 victoryNewGameButton.type = "button";
 victoryNewGameButton.textContent = "Новая игра";
 victoryCloseButton.type = "button";
 victoryCloseButton.textContent = "Закрыть";
-leaderboardTitle.textContent = "Таблица лидеров";
+
 leaderboardCloseButton.type = "button";
 leaderboardCloseButton.textContent = "Закрыть";
-leaderboardOverlay.hidden = true;
-leaderboardOverlay.setAttribute("aria-hidden", "true");
-leaderboardModal.setAttribute("role", "dialog");
-leaderboardModal.setAttribute("aria-modal", "true");
-leaderboardModal.setAttribute("aria-labelledby", "leaderboard-title");
-leaderboardTitle.id = "leaderboard-title";
 storageErrorMessage.setAttribute("role", "status");
-victoryOverlay.hidden = true;
-victoryOverlay.setAttribute("aria-hidden", "true");
-victoryModal.setAttribute("role", "dialog");
-victoryModal.setAttribute("aria-modal", "true");
-victoryModal.setAttribute("aria-labelledby", "victory-title");
-victoryTitle.id = "victory-title";
 
 const createCard = (animal, position) => {
     const card = createElement("button", "card");
@@ -90,6 +116,7 @@ const createCard = (animal, position) => {
     card.setAttribute("aria-pressed", "false");
     back.setAttribute("aria-hidden", "true");
     face.setAttribute("aria-hidden", "true");
+
     image.src = animal.image;
     image.alt = "";
     image.draggable = false;
@@ -225,15 +252,11 @@ const renderLeaderboard = () => {
 
 const openLeaderboard = () => {
     renderLeaderboard();
-    leaderboardOverlay.hidden = false;
-    leaderboardOverlay.setAttribute("aria-hidden", "false");
-    leaderboardCloseButton.focus();
+    openModal(leaderboardOverlay, leaderboardCloseButton);
 };
 
 const closeLeaderboard = () => {
-    leaderboardOverlay.hidden = true;
-    leaderboardOverlay.setAttribute("aria-hidden", "true");
-    leaderboardButton.focus();
+    closeModal(leaderboardOverlay, leaderboardButton);
 };
 
 board.setAttribute("aria-label", "Игровое поле из 16 карточек");
@@ -249,8 +272,7 @@ const startNewGame = () => {
     moves = 0;
     foundPairs = 0;
     isGameFinished = false;
-    victoryOverlay.hidden = true;
-    victoryOverlay.setAttribute("aria-hidden", "true");
+    closeModal(victoryOverlay, newGameButton);
     movesCounter.textContent = `Ходы: ${moves}`;
     pairsCounter.textContent = `Пары: ${foundPairs} / ${animals.length}`;
     const cards = shuffle(animals.flatMap((animal, id) => [
@@ -262,12 +284,11 @@ const startNewGame = () => {
 
 stats.append(movesCounter, pairsCounter);
 headerActions.append(newGameButton, leaderboardButton);
-header.append(stats, headerActions);
-victoryModal.append(victoryTitle, victoryMessage, victoryNewGameButton);
-victoryModal.append(victoryMoves, victoryActions);
+header.append(gameTitle, stats, headerActions);
+victoryModal.append(victoryMessage, victoryMoves, victoryActions);
 victoryActions.append(victoryNewGameButton, victoryCloseButton);
 victoryOverlay.append(victoryModal);
-leaderboardModal.append(leaderboardTitle, leaderboardContent, leaderboardCloseButton);
+leaderboardModal.append(leaderboardContent, leaderboardCloseButton);
 leaderboardOverlay.append(leaderboardModal);
 app.append(header, board);
 document.body.append(app, victoryOverlay, leaderboardOverlay);
@@ -304,9 +325,7 @@ board.addEventListener("click", (event) => {
             victoryMoves.textContent = `Число ходов: ${moves}`;
             saveLeaderboardResult();
             victoryModal.insertBefore(storageErrorMessage, victoryActions);
-            victoryOverlay.hidden = false;
-            victoryOverlay.setAttribute("aria-hidden", "false");
-            victoryNewGameButton.focus();
+            openModal(victoryOverlay, victoryNewGameButton);
         }
 
         return;
@@ -325,7 +344,7 @@ board.addEventListener("click", (event) => {
 
         isLocked = false;
         mismatchTimeout = null;
-    }, 850);
+    }, 900);
 });
 
 newGameButton.addEventListener("click", startNewGame);
@@ -333,8 +352,7 @@ victoryNewGameButton.addEventListener("click", startNewGame);
 leaderboardButton.addEventListener("click", openLeaderboard);
 leaderboardCloseButton.addEventListener("click", closeLeaderboard);
 victoryCloseButton.addEventListener("click", () => {
-    victoryOverlay.hidden = true;
-    victoryOverlay.setAttribute("aria-hidden", "true");
+    closeModal(victoryOverlay, newGameButton);
 });
 
 startNewGame();
