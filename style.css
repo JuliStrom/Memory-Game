@@ -26,15 +26,27 @@ body {
 }
 
 .game {
-    width: min(100%, 660px, calc(100dvh - 100px));
+    width: min(100%, 660px, calc(100dvh - 140px));
 }
 
 .game-header {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
     gap: 12px;
     margin-bottom: 14px;
+}
+
+.game-title {
+    flex-basis: 100%;
+    margin: 0;
+    color: #252b35;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 28px;
+    font-weight: 600;
+    letter-spacing: -0.04em;
+    text-align: center;
 }
 
 .game-stats,
@@ -309,8 +321,14 @@ button {
     }
 
     .game-header {
+        flex-wrap: wrap;
         gap: 8px;
         margin-bottom: 10px;
+    }
+
+    .game-title {
+        flex-basis: 100%;
+        font-size: 22px;
     }
 
     .game-stats,

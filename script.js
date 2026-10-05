@@ -17,6 +17,7 @@ const animals = [
 
 const app = createElement("main", "game");
 const header = createElement("header", "game-header");
+const gameTitle = createElement("h1", "game-title");
 const stats = createElement("div", "game-stats");
 const movesCounter = createElement("span", "game-stat");
 const pairsCounter = createElement("span", "game-stat");
@@ -48,6 +49,7 @@ const leaderboardStorageKey = "memory-game-leaderboard";
 
 movesCounter.setAttribute("aria-live", "polite");
 pairsCounter.setAttribute("aria-live", "polite");
+gameTitle.textContent = "Мемо";
 newGameButton.type = "button";
 newGameButton.textContent = "Новая игра";
 leaderboardButton.type = "button";
@@ -262,7 +264,7 @@ const startNewGame = () => {
 
 stats.append(movesCounter, pairsCounter);
 headerActions.append(newGameButton, leaderboardButton);
-header.append(stats, headerActions);
+header.append(gameTitle, stats, headerActions);
 victoryModal.append(victoryTitle, victoryMessage, victoryNewGameButton);
 victoryModal.append(victoryMoves, victoryActions);
 victoryActions.append(victoryNewGameButton, victoryCloseButton);
